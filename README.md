@@ -46,6 +46,19 @@ const covidFetch = fetch('https://data.rivm.nl/covid-19/COVID-19_rioolwaterdata.
 
 With this code i was able to parse the dataset and execute multiple functions to create new dataset and clean up the data.
 
+Variable declaration    
+```js
+let cityValue = []
+let svg = d3.select("svg")
+let rangeInput = document.getElementById("rangeInput")
+let range
+let xAxis
+let xScale
+let yAxis
+let yScale
+let timerHook
+```
+
 ```js
 
 function parseCovid() {
@@ -109,9 +122,107 @@ rangeInput.oninput = e => {
 This snippet of code helps me in handling the range input that gives the user the ability to adjust the amount of results show in the barchart. 
 This code also optimizes the code somewhat by creating a hook everytime a new input is detected and adding a timeout. This prevents the code of executing everytime the range input is changed and will only execute the current input value after 1 second. 
 
+## D3 related code
 
+Whenever you start to make a chart in D3 you want to define the canvas of your SVG and the margins used. 
 
+```js
+// set the dimensions and margins of the graph
+const margin = {
+        top: 30,
+        right: 30,
+        bottom: 200,
+        left: 120
+    },
+    width = 700 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom
+```
 
+The chart is drawn when the function graphCreation() is called upon. within this function i use the D3 syntax to define the parameters and values of the barchart.
+
+```js
+ // append the svg object to a div called "graph" and defining width and height. 
+    svg = d3
+        .select(".graph")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        // appending g to svg, adding initBar class
+        .append("g")
+        .attr("class", "initBar")
+        .attr("transform", `translate(${margin.left},${margin.top})`)
+```
+
+This code is used to append a SVG to a div called "graph", it defines the SVGs width, height and appends g to the SVG with class name "initBar"
+
+```js
+ // X axis scale
+    xScale = d3
+        .scaleBand()
+        .range([0, width])
+        .domain(compiledData.map((e) => {
+            return e[1]
+        })) // adds domain data of city
+        .padding(0.2)
+```
+Xscale is used to determine the x axis of the chart. scaleBand is used primarily for charts with categorical data. 
+It scales the x or y value for you based on a non-numerical value. In my case the city name. 
+
+```js
+    // X axis appending g
+    xAxis = svg
+        .append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(xScale))
+```
+xAxis is used to append a g element to the svg and create a correct x axis.
+
+```js
+xAxis
+        .selectAll("text")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end") // angles city text to improve visibility
+```
+This code is used to improve visibility of city names, when shown without an angle it will overlap eachother and makes the chart look messy. Now the text is angled and is easy to read. 
+
+```js
+    yScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(compiledData.map((e) => { // sets domain from 0 to max value retrieved from dataset
+            return e[0]
+        }))])
+        .range([height, 0])
+```
+yScale is used to define the y axel that shows the scale of particles per 100.000 residents. 
+.domain contains d3.max which picks the highest particle values from the returned data and sets this as the highest value on the y axis.
+
+```js
+    yAxis = svg
+        .append("g")
+        .call(d3.axisLeft(yScale))
+```
+Creation of the y axis where g is appended.
+
+```js
+    d3.select(".initBar")
+        .selectAll("rect")// select all rect elements
+        .data(compiledData) // data input
+        .join("rect") // add rect
+        .attr("x", (d) => xScale(d[1])) // define x value
+        .attr("y", (d) => yScale(d[0])) // define y value
+        .attr("class", "bars") // add class name bars
+        .attr("width", xScale.bandwidth()) // define width of bar
+        .attr("height", (d) => height - yScale(d[0])) // define height of bar
+        .attr("fill", "#FF5733") // add color fill to bar
+```
+The above code snippit is used to draw the actual bars in the chart. it starts off by selectingthe initBar class where it creates rect (rectangles).
+compiledData is defined as dataset, following this the x and y values are defined with data from the dataset. 
+After defining the x and y value the code adds class "bars" to the rectangles in the chart. 
+
+Next the width and height are defined. 
+Width is defined using the scaleBand function called bandwidth, automatically scaling the bar width based on total width of the chart and amount of bars shown. 
+Height is defined by taking the max height of the chart and lowering this value based on the particles value retrieved from the dataset. yScale contains scaleLinear which automatically scales this based on the Y axis. 
 
 ## Support
 23899@hva.nl
