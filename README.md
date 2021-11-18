@@ -294,10 +294,6 @@ function prepareData(cityValue, range) {
 prepareData is again called upon and instead of defaulting to 10, the slice range is now 0 to the current input value. 
 The returned combinedData object now contains the corresponding amount of results and sends this back to updateData() which sends this to the redraw() function.
 
-
-![chart before change](https://imgur.com/a/4oiCxmw)
-![chart after change](https://imgur.com/a/gIwOAuQ)
-
 ## Support
 23899@hva.nl
 
