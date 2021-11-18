@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Covid graph</title>
+</head>
+
+<body>
+    <form>
+        <label for="vol">Aantal resultaten:</label>
+        <input type="range" id="rangeInput" name="vol" min="4" max="25" value="10">
+    </form>
+
+    <div class="graph"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="text/javascript" src="datasets/covid.json"></script>
+    <script type="text/javascript" src="covid.js"></script>
+</body>
+
+</html>
