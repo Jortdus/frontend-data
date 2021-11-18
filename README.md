@@ -224,6 +224,76 @@ Next the width and height are defined.
 Width is defined using the scaleBand function called bandwidth, automatically scaling the bar width based on total width of the chart and amount of bars shown. 
 Height is defined by taking the max height of the chart and lowering this value based on the particles value retrieved from the dataset. yScale contains scaleLinear which automatically scales this based on the Y axis. 
 
+This is the initial creation of the graph without any modification or updates. 
+
+To handle changes to the dataset i created a function called redraw()
+
+```js
+function redraw(compiledData) {
+
+    xScale = d3
+        .scaleBand()
+        .range([0, width]) // sets range
+        .domain(compiledData.map((e) => {
+            return e[1]
+        })) // adds domain data of city
+        .padding(0.2) // adds padding
+
+    xAxis.call(d3.axisBottom(xScale))
+
+    xAxis
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end") // angles city text to improve visibility
+
+    yScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(compiledData.map((e) => {
+            return e[0]
+        }))]) // sets domain from 0 to max value retrieved from dataset
+        .range([height, 0])
+    yAxis.call(d3.axisLeft(yScale))
+
+    d3.select(".initBar")
+        .selectAll("rect") // select rectangle
+        .data(compiledData) // send data
+        .join("rect") 
+        .transition()
+        .attr("x", (d) => xScale(d[1])) // define x value
+        .attr("y", (d) => yScale(d[0])) // define y value
+        .attr("class", "bars") // add class name bars
+        .attr("width", xScale.bandwidth()) // define width of bar
+        .attr("height", (d) => height - yScale(d[0])) // define height of bar
+        .attr("fill", "#FF5733") // add color fill to bar
+
+}
+```
+
+A lot of the code is also used in graphCreation() but there are some small differences. 
+Instead of redrawing a lot of the chart, different data is parsed through. 
+Using .join(), exit() and remove() are not necesarry unless custom code is used when exited. 
+
+When inputs are detected by oninput code, a new dataset is created in the following function
+
+```js
+function updateData(range) {
+    let compiledData = prepareData(cityValue, range)
+    redraw(compiledData)
+}
+```
+updateData() defines a new compiledData variable and executes the redraw function sending compiledData as parameter. 
+
+```js
+function prepareData(cityValue, range) {
+    let combinedData = cityValue.slice(0, range ? range : 10)
+    return combinedData.map(e => {
+        return [e.particles, e.location]
+    })
+}
+```
+prepareData is again called upon and instead of defaulting to 10, the slice range is now 0 to the current input value. 
+The returned combinedData object now contains the corresponding amount of results and sends this back to updateData() which sends this to the redraw() function.
+
 ## Support
 23899@hva.nl
 
